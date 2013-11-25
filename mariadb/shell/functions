@@ -1,0 +1,41 @@
+#/bin/bash
+
+mariadb_prefetch()
+{
+  trace_filter package || set -o xtrace
+  package define \
+    base_url "http://mirror.jmu.edu/pub/mariadb/mariadb-galera-${package_version}/kvm-tarbake-jaunty-x86" \
+    file "mariadb-galera-${package_version}.${archive_format}"
+}
+
+mariadb_fetch() 
+{
+  trace_filter package || set -o xtrace
+  if [ ! -f "${sm_path}/archives/${package_file}" ]
+  then
+    curl -s -S -L "${package_base_url}/${package_file}" -o "${sm_path}/archives/${package_file}"
+  fi
+  path enter "${sm_path}/src"
+  tar -zxf "${sm_path}/archives/${package_file}" 
+  
+}
+
+mariadb_configure()
+{
+  trace_filter package || set -o xtrace
+  path enter "${sm_path}/src/mariadb-${package_version}"
+  cp BUILD/cmake_configure.sh configure
+  chmod +x configure
+  ./configure \
+  --prefix=/usr/local/mysql --enable-assembler --with-extra-charsets=complex \
+  --enable-thread-safe-client --with-big-tables --with-plugin-aria \
+  --with-aria-tmp-tables --with-readline --with-wsrep --enable-local-infile > /dev/null
+}
+
+mariadb_postinstall()
+{
+  files write append \
+    string "PATH=\"\$PATH:/usr/local/mysql/bin\" ; export PATH; " \
+    to "/etc/profile.d/mysql.sh"
+  files chmod 0755 "/etc/profile.d/mysql.sh"
+}
