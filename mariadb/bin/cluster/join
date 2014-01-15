@@ -1,0 +1,27 @@
+#!/bin/sh 
+echo ${extension_args[*]}
+while (( ${#extension_args} ))
+  do
+  array shift extension_args into token
+  case "${token}" in
+    (master)
+      array shift extension_args into master
+      if variable is empty master
+      then log error "The master host/IP identification string must follow keyword 'master'" ; fi
+      ;;
+    (replica)
+      array shift extension_args into replica
+      if variable is empty replica
+      then log error "The replica host/IP identification string must follow keyword 'replica'" ; fi
+      ;;
+    (*)
+      if variable is nonempty token
+      then
+        newargs+=("${token}")
+      fi
+    ;;
+  esac
+done
+
+
+nohup mysqld --wsrep_cluster_address=gcomm://${master} --wsrep_provider=/usr/lib64/galera/libgalera_smm.so --wsrep_node_address=${replica}  > /dev/null 2>&1 &

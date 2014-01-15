@@ -38,4 +38,5 @@ mariadb_postinstall()
     string "PATH=\"\$PATH:/usr/local/mysql/bin\" ; export PATH; " \
     to "/etc/profile.d/mysql.sh"
   files chmod 0755 "/etc/profile.d/mysql.sh"
+  source /etc/profile
 }
